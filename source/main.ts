@@ -38,7 +38,12 @@ export async function load() {
     // Initialize config manager
     const configManager = getConfigManager();
     await configManager.initialize();
-    
+
+    // Drop a ready-to-use .mcp.json into the project root so an agent opened here connects
+    // with no manual setup. Rewritten every load to keep UTCP_CONFIG_FILE pointing at the
+    // current (beside-the-extension) config path.
+    configManager.writeProjectMcpConfig();
+
     utcpServer = new UtcpServerManager();
 
     let wasConfiguredPort = true;

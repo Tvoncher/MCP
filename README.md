@@ -141,7 +141,7 @@ Two special settings types can be inspected and modified directly:
 1. Download last release from this repository.
 2. Open Cocos Creator, go to **Extension → Extension Manager**, and click `Import Extension File(.zip)` button (icon with arrow).
 3. Select the downloaded zip file.
-4. The UTCP server starts automatically and registers itself in `~/.utcp_config.json` by default.
+4. The UTCP server starts automatically and registers itself in a `.utcp_config.json` file created beside the extension by default.
 
 ### Build from source
 
@@ -207,32 +207,41 @@ The extension automatically maintains a `CocosEditor` entry in UTCP Config point
 
 Code Mode works with any UTCP-compatible client, including the [Code Mode MCP server](https://github.com/universal-tool-calling-protocol/code-mode/?tab=readme-ov-file#even-easier-ready-to-use-mcp-server) for AI assistants.
 
-### MCP Server Config
+### Automatic setup (recommended)
+
+Install the extension once in your **global** extensions folder and it becomes zero-setup for every project. On each editor start the extension writes a ready-to-use `.mcp.json` into the currently opened project root, with `UTCP_CONFIG_FILE` already pointing at the UTCP config that lives beside the extension. The path is resolved at runtime, so it is correct on any machine, user, or OS — nothing to edit by hand.
+
+The generated file (Windows shown; macOS/Linux uses `"command": "npx"` with `"args": ["@utcp/code-mode-mcp"]`):
 
 ```json
 {
   "mcpServers": {
     "code-mode": {
-      "command": "npx",
-      "args": ["@utcp/code-mode-mcp"],
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "@utcp/code-mode-mcp"],
       "env": {
-        "UTCP_CONFIG_FILE": "~/.utcp_config.json"
+        "UTCP_CONFIG_FILE": "<resolved path to .utcp_config.json beside the extension>"
       }
     }
   }
 }
 ```
 
-### Claude Code Configuration
+Just open the project in Cocos Creator with the extension enabled, then (re)start your agent so it picks up the `.mcp.json`.
 
-To set up a Claude Code agent to use Code Mode, open your project and run:
+> The file is **rewritten on every editor start** to keep `UTCP_CONFIG_FILE` in sync, so manual edits to a project's `.mcp.json` will be overwritten. `npx` requires Node.js installed on the machine running the agent.
+
+### Manual setup
+
+If you prefer not to have a per-project `.mcp.json`, register the server once at **user scope** in Claude Code (works across all projects, no project files). Use the config path shown in the extension's **Configuration** panel for `UTCP_CONFIG_FILE`:
 
 Linux/MacOS:
 ``` bash
-claude mcp add --transport stdio --env UTCP_CONFIG_FILE="~/.utcp_config.json" -- code-mode npx @utcp/code-mode-mcp
+claude mcp add -s user --transport stdio --env UTCP_CONFIG_FILE="<path from panel>" -- code-mode npx @utcp/code-mode-mcp
 ```
 
 Windows:
 ``` powershell
-claude mcp add --transport stdio --env UTCP_CONFIG_FILE="%userprofile%/.utcp_config.json" -- code-mode cmd /c npx @utcp/code-mode-mcp
+claude mcp add -s user --transport stdio --env UTCP_CONFIG_FILE="<path from panel>" -- code-mode cmd /c npx @utcp/code-mode-mcp
 ```

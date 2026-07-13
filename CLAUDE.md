@@ -20,7 +20,7 @@ Read `README.md` for the external-facing architecture explanation (discover-then
 
 ### Entry points (`source/main.ts`, `source/scene.ts`)
 
-- `main.ts` — the editor-process extension entry (`load`/`unload`/`methods`). On `load()`, it initializes the `UtcpConfigManager`, starts `UtcpServerManager` on a port persisted in `Editor.Profile` (0 = auto-assign), and writes/updates a `CocosEditor` entry in the UTCP config file (default `~/.utcp_config.json`) pointing at that port. Exposes `restartServer` for the configuration panel.
+- `main.ts` — the editor-process extension entry (`load`/`unload`/`methods`). On `load()`, it initializes the `UtcpConfigManager`, starts `UtcpServerManager` on a port persisted in `Editor.Profile` (0 = auto-assign), and writes/updates a `CocosEditor` entry in the UTCP config file (default `.utcp_config.json` beside the extension, resolved at runtime from `__dirname`) pointing at that port. Exposes `restartServer` for the configuration panel.
 - `scene.ts` — the scene-process script (registered via `contributions.scene` in `package.json`). Runs inside the actual scene runtime context (has access to `cce`/`cc` globals), unlike `main.ts` which runs in the editor process. Tools that need scene-runtime access (prefab creation/apply/unwrap, screenshot capture, log catching) call into this via `Editor.Message.request('scene', 'execute-scene-script', { name: packageJSON.name, method: '...' })` — see the pattern in `source/utcp/tools/scene-tools.ts`'s `nodeOperate`.
 
 ### Tool registration (`source/utcp/decorators.ts`, `source/utcp/utcp-server.ts`)
@@ -59,7 +59,7 @@ Write tools generally end with `await Editor.Message.request('scene', 'snapshot'
 
 ### Config management (`source/utcp/config-manager.ts`)
 
-- `UtcpConfigManager` (singleton) owns reading/writing the UTCP config JSON file (default `~/.utcp_config.json`, path itself persisted per-project via `Editor.Profile`). `ensureCocosEditorTemplate(port)` keeps a `CocosEditor` HTTP call template in that file in sync with whatever port the server actually bound to (ports are often auto-assigned, so this runs on every start/restart).
+- `UtcpConfigManager` (singleton) owns reading/writing the UTCP config JSON file (default `.utcp_config.json` beside the extension, resolved from `__dirname` so a global install is self-contained; an override path is persisted per-project via `Editor.Profile`). `ensureCocosEditorTemplate(port)` keeps a `CocosEditor` HTTP call template in that file in sync with whatever port the server actually bound to (ports are often auto-assigned, so this runs on every start/restart).
 
 ## Agent operating rules (from `prompt_example.md`)
 
