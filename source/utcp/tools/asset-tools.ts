@@ -1,5 +1,5 @@
 import packageJSON from '../../../package.json';
-import { Jimp } from 'jimp';
+import { renderImagePreviewJpeg } from '../utils/image-utils';
 import fs from 'fs-extra';
 import { utcpTool } from '../decorators';
 import { AssetInfo, AssetOperationOption } from '@cocos/creator-types/editor/packages/asset-db/@types/public';
@@ -440,22 +440,16 @@ export class AssetTools {
 
         if (sourcePath && fs.existsSync(sourcePath)) {
             try {
-                const image = await Jimp.read(sourcePath);
-                const requestedSize = args.imageSize || 512;
-
-                if (image.width > requestedSize || image.height > requestedSize) {
-                    image.contain({ w: requestedSize, h: requestedSize });
-                }
-
-                // Flatten transparency by compositing onto a colored background
-                const bg = args.transparentColor;
-                const bgImage = new Jimp({ width: image.width, height: image.height, color: (bg.r << 24 | bg.g << 16 | bg.b << 8 | 0xFF) >>> 0 });
-                bgImage.composite(image, 0, 0);
-
-                const buffer = await bgImage.getBuffer("image/jpeg", { quality: args.jpegQuality || 80 });
+                const sourceBuffer = await fs.readFile(sourcePath);
+                const buffer = renderImagePreviewJpeg(
+                    sourceBuffer,
+                    args.imageSize || 512,
+                    args.transparentColor,
+                    args.jpegQuality || 80,
+                );
                 return { type: "image", data: buffer.toString('base64'), mimeType: "image/jpeg" };
             } catch (e) {
-                console.error(`Failed to process image from ${sourcePath} with jimp:`, e);
+                console.error(`Failed to process image from ${sourcePath}:`, e);
             }
         }
 

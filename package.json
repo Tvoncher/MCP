@@ -18,7 +18,8 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "fs-extra": "^10.0.0",
-    "jimp": "^1.6.1",
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
@@ -27,6 +28,7 @@
     "@types/express": "^5.0.6",
     "@types/fs-extra": "^9.0.5",
     "@types/node": "^18.17.1",
+    "@types/pngjs": "^6.0.5",
     "archiver": "^7.0.1",
     "typescript": "^5.8.2"
   },
